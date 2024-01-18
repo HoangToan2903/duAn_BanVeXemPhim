@@ -175,6 +175,53 @@ public class ScheduleAdminController {
         model.addAttribute("list", getAll);
         return new ResponseEntity<>(getAll, HttpStatus.OK);
     }
+    @GetMapping("/chi-tiet-calendar-schedule/detail")
+    @Operation(summary = "[tim kiếm theo ngày]")
+    public ResponseEntity<?> viewDate(@RequestParam("date") String date, Model model){
+        List<Schedule> schedule = scheduleService.findByDateStartAt(date);
+        return new ResponseEntity<>(schedule, HttpStatus.OK);
+    }
+    @GetMapping("/chi-tiet-calendar-schedule")
+    public String viewer(Model model){
+        List<Schedule> schedule = scheduleService.getAll();
+        model.addAttribute("list", schedule);
+        return "admin/chi-tiet-schedule";
+    }
+
+
+
+    @GetMapping("/delete/{id}")
+    public String delete(@PathVariable(name = "id") String id, RedirectAttributes ra) {
+        try {
+            service.delete(id);
+            ra.addFlashAttribute("successMessage", "Xóa thành công!!!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Xóa thất bại!!!");
+        }
+        return "redirect:/schedule";
+    }
+    
+    @PostMapping("/save")
+    @Operation(summary = "[Thêm mới]")
+    public String save(Model model, @RequestParam(name = "status") String status,@RequestParam(name = "id") String id, RedirectAttributes ra) {
+        try {
+            Schedule schedule = Schedule.builder()
+                    .id(id)
+                    .status(status)
+                    .build();
+
+            if (service.save(schedule) instanceof String) {
+                ra.addFlashAttribute("successMessage", "Thêm thành công");
+            } else {
+                ra.addFlashAttribute("thaerrorMessagetBai", "Thêm thất bại");
+            }
+            model.addAttribute("schedule", new Schedule());
+            return "redirect:/schedule/chi-tiet-calendar-schedule";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "admin/chi-tiet-schedule";
+        }
+    }
 }
 
 
